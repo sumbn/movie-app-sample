@@ -1,52 +1,64 @@
 package com.example.movieapplication.Adapter
 
-import android.app.Activity
-import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.TextView
+import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.movieapplication.MainActivity
 import com.example.movieapplication.R
-import com.example.movieapplication.module.DetailMovie
+import com.example.movieapplication.databinding.RecyclerviewRowBinding
+import com.example.movieapplication.module.RecyclerData
 
-class AdapterRCVTopRate : RecyclerView.Adapter<AdapterRCVTopRate.MovieHolder> {
-    constructor(list: MutableList<DetailMovie>,x:((DetailMovie)->Unit)) : super() {
+class AdapterRCVTopRate : RecyclerView.Adapter<AdapterRCVTopRate.MovieHolder>() {
+    lateinit var onClick: (RecyclerData) -> Unit
+    var list = ArrayList<RecyclerData>()
+    fun setData(list: ArrayList<RecyclerData>, x: ((RecyclerData) -> Unit)) {
         this.list = list
         this.onClick = x
     }
-    private val onClick:(DetailMovie) -> Unit
 
-    private val list: MutableList<DetailMovie>
-
-    class MovieHolder : RecyclerView.ViewHolder {
-        constructor(view: View,context:Context) : super(view){
-            this.context = context
+    class MovieHolder(val binding: RecyclerviewRowBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(data: RecyclerData) {
+            binding.recyclerData = data
+            binding.executePendingBindings()
         }
-        val imvPoster:ImageView = itemView.findViewById(R.id.imvPoster)
-        val tvtitle: TextView = itemView.findViewById(R.id.tvtitle)
-        val context:Context
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MovieHolder {
         val layoutInflater: LayoutInflater = LayoutInflater.from(parent.context)
-        val view: View = layoutInflater.inflate(R.layout.movie_item, parent, false)
-        return MovieHolder(view,parent.context)
+        val binding = RecyclerviewRowBinding.inflate(layoutInflater)
+        return MovieHolder(binding)
     }
 
     override fun onBindViewHolder(holder: MovieHolder, position: Int) {
-        val movie:DetailMovie = list[position]
-        Glide.with(holder.context).load("https://image.tmdb.org/t/p/w500/"+movie.posterPath).into(holder.imvPoster)
-        holder.tvtitle.text = movie.title
-        holder.imvPoster.setOnClickListener {
-            onClick(movie)
-        }
+        holder.bind(list[position])
     }
 
     override fun getItemCount(): Int {
-       return list.size
+        return list.size
+    }
+    companion object {
+        @JvmStatic
+        @BindingAdapter("loadImage")
+        fun loadImage(imvPoster : ImageView,url: String){
+            Glide.with(imvPoster).load("https://image.tmdb.org/t/p/w500/"+ url)
+                .circleCrop()
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(R.drawable.ic_launcher_background)
+                .fallback(R.drawable.ic_launcher_background)
+                .into(imvPoster)
+        }
+
     }
 }
+
+//@BindingAdapter("loadImage")
+//fun loadImage(imvPoster: ImageView, url: String) {
+//    Glide.with(imvPoster).load("https://image.tmdb.org/t/p/w500/" + url)
+//        .circleCrop()
+//        .placeholder(R.drawable.ic_launcher_background)
+//        .error(R.drawable.ic_launcher_background)
+//        .fallback(R.drawable.ic_launcher_background)
+//        .into(imvPoster)
+//}
